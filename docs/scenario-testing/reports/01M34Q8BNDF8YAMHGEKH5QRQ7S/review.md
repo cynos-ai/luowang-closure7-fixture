@@ -16,7 +16,7 @@
 **前置与起始态**：op-3 导航到 `http://closure7-retest-target:3100`，op-4/`page-...-14-11-26-879Z.yml` 显示未登录登录表单，起始态成立。op-1/op-2 记录 `begin_scenario_execution` 与 `start_scenario(AUTH-LOGIN-001)`，op-68 `finish_scenario` completed `["AUTH-LOGIN-001"]`；seq 3–67 全部 operation 的 `execution.scenarioId` 均为 `AUTH-LOGIN-001`，无跨场景穿插，时序自洽。
 
 - **期望 A（刷新后显示同一用户）— 成立。**
-  op-5 填表 → op-7 点击登录 → op-8 快照显示 `你好，luowang-01M34Q8BNDF8YAMHGEKH5QRQ7S-preset。`；op-15 整页导航刷新同一 URL → op-17 快照仍显示同一用户；op-16 记录刷新后 `GET /api/auth/status => [200]`，op-21 该请求头携带 cookie（reference `credential-976441…`），op-22 响应体 `{"authenticated":true,"user":{"id":"49fdb588-…","displayName":"luowang-…-preset",…}}`。我读 `after-refresh.png` / `before-refresh.png` / `login-success.png`（三者 sha256 相同 `531d8e2f…`，属同一登录态页面）均显示同一用户与同一邮箱 `luowang-01m34q8bndf8yamhgekh5qrq7s-preset@example.test`。观察支持 A。
+  op-5 填表 → op-7 点击登录 → op-8 快照显示 `你好，luowang-01M34Q8BNDF8YAMHGEKH5QRQ7S-preset。`；op-15 整页导航刷新同一 URL → op-17 快照仍显示同一用户；op-16 记录刷新后 `GET /api/auth/status => [200]`，op-21 该请求头携带 cookie（reference `credential-976441…`），op-22 响应体 `{"authenticated":true,"user":{"id":"49fdb588-…","displayName":"luowang-…-preset",…}}`。我读 `after-refresh.png` / `before-refresh.png` / `login-success.png`（三者 sha256 相同 `531d8e2f…`，属同一登录态页面）均显示同一用户与同一邮箱 `[REDACTED]`。观察支持 A。
 - **期望 B（退出后页面回到登录状态）— 成立。**
   op-23 点击「退出登录」→ op-24 `POST /api/auth/logout => [200] OK`（op-26 该请求头携带退出前 cookie reference `credential-976441…`）→ op-25 快照显示登录表单及提示「已安全退出。」；我读 `after-logout.png` 一致（页面含「已安全退出。」与登录表单）。观察支持 B。
 - **期望 C（退出后的 Session 访问受保护接口返回 401）— 成立，且可与“无 Cookie 的平凡 401”区分。**
