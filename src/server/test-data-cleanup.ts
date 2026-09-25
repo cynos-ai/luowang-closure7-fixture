@@ -19,6 +19,32 @@ export function registerTestDataCleanup(
   const remove = database.sqlite.prepare(
     'DELETE FROM users WHERE lower(email) LIKE ? OR lower(display_name) LIKE ?',
   );
+  const storage = database.sqlite.prepare(
+    'SELECT password_hash FROM users WHERE lower(email) LIKE ? OR lower(display_name) LIKE ?',
+  );
+  app.get<{ Params: { runId: string } }>(
+    '/api/luowang/test-data/:runId/storage',
+    async (request, reply) => {
+      const supplied = createHash('sha256')
+        .update(request.headers.authorization ?? '')
+        .digest();
+      if (!timingSafeEqual(expected, supplied))
+        return reply.code(401).send({ error: 'UNAUTHORIZED' });
+      const { runId } = request.params;
+      if (!RUN_ID.test(runId)) return reply.code(400).send({ error: 'INVALID_RUN_ID' });
+      const pattern = `luowang-${runId.toLowerCase()}-%`;
+      const rows = storage.all(pattern, pattern) as Array<{ password_hash: string }>;
+      const argon2id = rows.filter(({ password_hash }) =>
+        /^\$argon2id\$v=19\$m=\d+,t=\d+,p=\d+\$[A-Za-z0-9+/]+\$[A-Za-z0-9+/]+$/.test(password_hash),
+      ).length;
+      return reply.header('cache-control', 'no-store').send({
+        runId,
+        accounts: rows.length,
+        argon2id,
+        other: rows.length - argon2id,
+      });
+    },
+  );
   for (const method of ['GET', 'DELETE'] as const) {
     app.route<{ Params: { runId: string } }>({
       method,
